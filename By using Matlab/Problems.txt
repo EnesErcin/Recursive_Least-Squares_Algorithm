@@ -1,0 +1,15 @@
+
+- Weigths are equal to each other 
+	Other dimensions of weigths looks unneccesery
+	(In this example there is no unlinear process)
+ 
+- Noise range is constant
+  	(It could be adaptive !!)
+
+- Tested with small number of inputs
+	(How to convert sound data to test ?)
+
+Small number of inputs are given to analyse the algorithm
+It helped me to reach the insigths above
+
+
