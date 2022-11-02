@@ -1,22 +1,19 @@
-++ Carefully cheked every dimensions of eacy arrays
-++ Added assertation command when seen neccesery
-
 * The critical points to finish the algorithm is to
 control initation. More specifically when there is not 
 enough data to fill the array matrices.
+
++Solution: Just initate with delta*Identity
+It is updated to suitble values after couple itterations
+
+!Bad initation slows down the learning
 
 * Some mathematical opperations seemed odd to me 
 yet I didnt check 
 
 	Check Sherman-Morrison formula -- (Inverse Update)
-	Check different mathematical opperations to find 
-	p[t] with A_t <--> Σq[i]
-	Check updating least square solution 
-	calculate via update <--> calculate by knowing 
-	beforehand
 
-*Evaluate the result 
-If the results are not giving any close estimate 
-of the system than go through the algorithm again
 
+*Nonlinear noise -- What to do ??
+
+*System identification checked , noise reduction incomplete
 
