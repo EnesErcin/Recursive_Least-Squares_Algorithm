@@ -48,18 +48,21 @@ class RLS_Filter:
         '''            
 
         self.g = self.lam_inv*self.P*x/(1+self.lam_inv*(x.T*self.P*x))
-        self.P = self.P*self.lam_inv - self.g*(x.T*self.P)
+        self.P = np.multiply(self.lam_inv,(self.P - self.g*(x.T*self.P)))
         self.w = self.w + self.g*(t-x.T*self.w)
 
         self.a_priori_error = t - x.T*self.w
         self.num_obs += 1
         
 
-    def get_error(self):
+    def get_error(self,trail):
         '''
         Finds the (instantaneous) error.
         '''
-        return self.a_priori_error
+        error_acc = self.a_priori_error 
+        rms_err   = error_acc
+
+        return self.a_priori_error, rms_err 
 
     def get_weights(self):
         '''
@@ -68,29 +71,19 @@ class RLS_Filter:
         return self.w
 
 
-def gen_regs(x_val,deg,mem_len,prediction):
-    regs = np.zeros((mem_len,deg))
-
-    assert np.shape(x_val)      ==  (2,)
-    assert np.shape(prediction) ==  (deg,)
-
-    for j in range (mem_len):
-        for k in range (deg):
-            regs[j][k] = x_val[j]**prediction[k]
-
-    return regs
-
-
 #Create and update pure signal
 def update_availbe_signal(data_in,degree_dim):
-    mem_dim =len(data_in)   
-    regs = np.zeros((mem_dim,degree_dim))
+    assert(type(degree_dim) == list)
+    mem_dim = int(len(data_in))   
+    degs = int(len(degree_dim))
+
+    regs = np.zeros((mem_dim,degs))
     c = 0
 
     for m in range(mem_dim):
-        for k in range(degree_dim):
-            c = (data_in[m]**k)
-            regs[m][k] = c
+        for count,k in enumerate(degree_dim):
+            c = data_in[m]**k
+            regs[m][count] = c
 
     return regs
 
@@ -128,7 +121,8 @@ def one_batch(deg,mem_len,prediction,LS_2,test_size,input_data,reference_data):
     pred_e = []
     pred_output = []
 
-
+    weights = []
+    #assert(len(input_data)  <   test_size)
 
     for i in range(test_size):
 
@@ -138,19 +132,40 @@ def one_batch(deg,mem_len,prediction,LS_2,test_size,input_data,reference_data):
 
         #regs = gen_regs(x_val=every_pure_input[i][:],deg=deg,mem_len=mem_len,prediction=prediction)
         #regs = regs.reshape(1,num_vars)
-        regs = update_availbe_signal(data_in= every_input[i] ,degree_dim=4)
+        assert(len(prediction) == deg)
+        regs = update_availbe_signal(data_in= every_input[i] ,degree_dim=prediction)
         regs = regs.flatten()
         regs = regs.reshape(1,num_vars)
 
         LS_2.add_obs(x=regs.T,t=reference_data[i])
         #Single RLS Data has been evaluated
 
-        pred_e.append(LS_2.get_error())     
-        #To observe if the error is in fact decreasing
-
+        
         get_weigths = LS_2.get_weights()
         #print(get_weigths)
+        weights.append(get_weigths)
 
-        pred_output.append(regs*get_weigths)
+        pred_output.append(regs*get_weigths)  
 
-    return pred_e,pred_output
+        _,rms = LS_2.get_error(i)
+
+        pred_e.append(rms)     
+        #To observe if the error is in fact decreasing
+    
+    overall_error = pred_e[test_size-1]
+
+    return pred_e,pred_output,overall_error,weights
+
+def generate_input(data,mem_len,test_size):
+    every_input     = np.zeros((test_size+mem_len,mem_len))
+    avilable_input  = np.zeros(mem_len)
+
+    for k in range (mem_len):
+        data = np.insert(data,0,0)
+
+    for j in range (test_size):
+        for i in range (mem_len):
+            avilable_input[i] = data[j+i]
+        every_input[j] = avilable_input
+
+    return every_input
