@@ -30,24 +30,17 @@ TX_I_data = f.get("TX_I")
 mem_len = int(input("Memory Dimension ? || suggestion: <3"))
 est_per= int(input("How many data ? || suggestion <1600"))
 lam = float(input("Forgetting Factor ? || suggestion >0.90"))
-deg = int(input("Degree dim ?"))
+deg = int(input("Regressor exponent ? Enter 1 -> 1 "))
 # Example est_per = 1600 deree_len = 4 regs = [1,2,3,4] mem_len = 2 ,lam = 0.99-0.90
 prediction = []
 
 for i in range(deg):
     reg = int(input("Suggested inputs ?"))
     prediction.append(reg)
-
-if deg != 0:
-    num_vars = deg*mem_len
-else:
-    num_vars = mem_len
-
+num_vars = deg*mem_len
 i = int(input("start_point || suggestion: <5"))
 LS_2 = RLS.RLS_Filter(num_vars,lam,1)
 test_size = len(TX_Q_data[i*est_per:(i+1)*(est_per)])
-print("Len Test_Size", test_size,est_per,i)
-
 
 
 pred_e, pred_output,_,weight = RLS.one_batch(test_size = test_size, 
